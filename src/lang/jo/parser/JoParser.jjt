@@ -1,0 +1,325 @@
+// オプション定義
+options {
+    JDK_VERSION = "1.5";
+    DEBUG_PARSER = true;
+    DEBUG_LOOKAHEAD = true;
+    DEBUG_TOKEN_MANAGER = false;
+    ERROR_REPORTING = true;
+    //* <boolean: true> メソッドをすべてstaticにする
+    STATIC = false;
+    //* <boolean: false>ノードごとにクラスを生成する
+    MULTI = true;
+    //* <boolean: false> Visitorパターンを利用する
+    VISITOR = true;
+    //* <String> LOOKAHEADの規定値
+    // LOOKAHEAD
+    //
+    USER_CHAR_STREAM = false;
+    //
+    USER_TOKEN_MANAGER = false;
+    //* <boolean> 生成したパーサーがUNICODEでの入力を受け付けるようにする
+    UNICODE_INPUT = true;
+    //
+    JAVA_UNICODE_ESCAPE = false;
+    //* <boolean: true> SimpleNode及び文法中で使用されるその他のノードのサンプル実装を生成します
+    // BUILD_NODE_FILES
+    //* <boolean: false> 大文字小文字の区別をしない
+    IGNORE_CASE = false;
+    //* <String> ノードの基底クラス
+    NODE_EXTENDS = "lang.jo.parser.node.JoNode";
+    //* <boolean: false> 各ノードスコープの入口と出口にユーザ定義パーサメソッドの呼出しを挿入します
+    NODE_SCOPE_HOOK = true;
+    //* <boolean: false> ノードを生成する際、次のシグネチャのファクトリメソッドを使用します
+    NODE_FACTORY = true;
+    //* <boolean: false> パーサオプジェクトを渡す、ノード生成ルーチンの別形式を使います
+    NODE_USES_PARSER = true;
+    //* <String: ""> 生成したノードクラスを格納するパッケージ。デフォルトはパーサのパッケージ
+    // NODE_PACKAGE = "lang.jo.parser.node.jjt";
+    //* <String: "AST"> multiモードでノード識別子からノードクラス名を生成するのに使われるプレフィックス
+    NODE_PREFIX = "JoNode";
+    //* <boolean: false> 特に指定のない場合、ノードを生成しないようにする
+    // NODE_DEFAULT_VOID　= false;
+    //
+    BUILD_PARSER = true;
+    //
+    BUILD_TOKEN_MANAGER = true;
+    //
+    SANITY_CHECK = true;
+    //
+    FORCE_LA_CHECK = true;
+    //
+    CHOICE_AMBIGUITY_CHECK = true;
+    //
+    OTHER_AMBIGUITY_CHECK = true;
+    //* <boolean: false> Token発見時に void CommonTokenAction(Token token) が呼び出される
+    COMMON_TOKEN_ACTION = true;
+    //* <boolean: false> jjtGetFirstToken(), jjtSetFirstToken(), getLastToken(), and jjtSetLastToken() をSimpleNodeに追加する
+    // TRACK_TOKENS = true;
+    //* <String: "Object"> Visitorの引数で使用される型 
+    // VISITOR_DATA_TYPE = "JoContext";
+    //* <String: "Object"> Visitorの戻り型
+    // VISITOR_RETURN_TYPE = "JoContext";
+    //* <String: ""> JJTreeの出力先ディレクトリ。
+    //JJTREE_OUTPUT_DIRECTORY = "node/jjt";
+}
+
+// パーサークラスの定義
+PARSER_BEGIN(JoParser)
+package lang.jo.parser;
+import lang.jo.parser.node.QuoteType;
+public class JoParser {
+    public void jjtreeOpenNodeScope(Node node) {
+    }
+    public void jjtreeCloseNodeScope(Node node) {
+    }
+}
+PARSER_END(JoParser)
+
+TOKEN_MGR_DECLS: {
+    void CommonTokenAction(Token t) {
+    }
+}
+
+/*
+ * SKIP:　マッチした文字列は捨てられる。
+ * MORE:　マッチ操作は継続される。ここでマッチした文字列と以後マッチしたものを結合したものがトークンになる。
+ * TOKEN:　マッチした文字列でトークンを形成して返す。
+ * SPECIAL_TOKEN:　スペシャルトークンを作るが、それは返さない。その次にマッチしたトークンのspecialTokenフィールドで見ることが出来る。
+ */
+/* operators */
+TOKEN: {
+    < OPERATOR:
+        <ASSIGN>
+        | <DOT>
+        | <COLON>
+        | <TILDE>
+        | <BANG>
+        | <HOOK>
+        | <ATMARK>
+        | <DLR>
+        | <REM>
+        | <XOR>
+        | <BIT_AND>
+        | <BIT_OR>
+        | <BACKSLASH>
+        | <STAR>
+        | <MINUS>
+        | <PLUS>
+        | <SLASH>
+        | <GT>
+        | <LT>
+    >
+    | < #ASSIGN: "=" >
+    | < #GT: ">" >
+    | < #LT: "<" >
+    | < #BANG: "!" >
+    | < #HOOK: "?" >
+    | < #TILDE: "~" >
+    | < #PLUS: "+" >
+    | < #MINUS: "-" >
+    | < #STAR: "*" >
+    | < #SLASH: "/" >
+    | < #BACKSLASH: "\\">
+    | < #BIT_AND: "&" >
+    | < #BIT_OR: "|" >
+    | < #XOR: "^" >
+    | < #REM: "%" >
+    | < #ATMARK: "@" >
+    | < #DLR: "$" >
+    | < #SEMICOLON: ";" >
+    | < #COLON: ":" >
+    | < #DOT: "." >
+}
+
+/* spans */
+TOKEN: {
+    < TERMINATOR:        (<SEPERATOR>)? <SEMICOLON>  | <NEWLINE> | <NEWLINE> (<SEPERATOR>)?    >
+}
+SPECIAL_TOKEN: {
+    < SEPERATOR: " "  | "\t" | "\f" >
+}
+SPECIAL_TOKEN: {
+    < WHITESPACE: " " | "\t" | "\n" | "\r" | "\f" >
+}
+TOKEN: {
+    < SCTPAD: <SEPERATOR> | <COMMENT> | <TERMINATOR> >
+}
+TOKEN: {
+    < SCPAD: <SEPERATOR> | <COMMENT> >
+}
+TOKEN: {
+    < WCPAD: <WHITESPACE> | <COMMENT> >
+}
+TOKEN: {
+    < NEWLINE: "\r\n"|"\n"|"\r" >
+}
+TOKEN: {
+    < COMMA: "," >
+}
+
+/* identifier */
+TOKEN: {
+    < IDENTIFIER: (<COLON>)? <LETTER> (<LETTER> | <NUMBER> | <SPECIALCHAR>)+ >
+    | < #LETTER: ["$","A"-"Z","_","a"-"z"] >
+    | < #SPECIALCHAR: [":", ".", "-"] >
+}
+
+/* numbers */
+TOKEN: {
+    < NUMBER: <HEXNUMBER> | <DECIMAL> | <OCTET> | <FLOAT> >
+}
+TOKEN: {
+    < HEXNUMBER: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+    | < DECIMAL: ["1"-"9"] (["0"-"9"])* | "0" >
+    | < OCTET: "0" (["0"-"7"])* >
+    | < FLOAT: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?
+        | "." (["0"-"9"])+ (<EXPONENT>)?
+        | (["0"-"9"])+ <EXPONENT> >
+    | < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+}
+
+/* comments */
+TOKEN: {
+    < COMMENT: <SINGLE_LINE_COMMENT> | <MULTI_LINE_COMMENT> >
+}
+TOKEN: {
+    <SINGLE_LINE_COMMENT: ("//"|"#") (~["\n","\r"])*>
+    | <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+/* quotes */
+TOKEN: {
+    < BACKQUOTES: <BACK_QUOTE> (<B_WITH_STRING>)* <BACK_QUOTE> >
+    | < SINGLEQUOTES: <SINGLE_QUOTE>  (<S_WITH_STRING>)* <SINGLE_QUOTE> >
+    | < DOUBLEQUOTES: <DOUBLE_QUOTE> (<D_WITH_STRING>)* <DOUBLE_QUOTE> >
+    | < TRIQUOTES: <TRI_QUOTE> (<T_WITH_STRING>)* <TRI_QUOTE> >
+    | < #BACK_QUOTE: "`" >
+    | < #SINGLE_QUOTE: "'" >
+    | < #DOUBLE_QUOTE: "\"" >
+    | < #TRI_QUOTE: "\"\"\"" >
+    | < #B_WITH_STRING: ~["`"] | <NOT_MULTI_LINE> | <ESCAPE_SEQUENCE> >
+    | < #S_WITH_STRING: ~["'"] | <NOT_MULTI_LINE> | <ESCAPE_SEQUENCE> >
+    | < #D_WITH_STRING: ~["\""] | <NOT_MULTI_LINE> | <ESCAPE_SEQUENCE> >
+    | < #T_WITH_STRING: ~["\"", "'", "`"] | <ESCAPE_SEQUENCE> >
+    | < #NOT_MULTI_LINE: ~["\\", "\n", "\r"] >
+    | < #ESCAPE_SEQUENCE: "\\" ["n", "t", "b", "r", "f", "\\", "'", "\"", "`"] >
+}
+
+/* characters */
+TOKEN: {
+    < OPEN: <LPAREN> | <LBRACE> | <LBRACKET> >
+    | < #LPAREN: "(" >
+    | < #LBRACE: "{" >
+    | < #LBRACKET: "[" >
+}
+
+TOKEN: {
+    < CLOSE: <RPAREN> | <RBRACE> | <RBRACKET> >
+    | < #RPAREN: ")" >
+    | < #RBRACE: "}" >
+    | < #RBRACKET: "]" >
+}
+
+TOKEN: {
+    < ANYTHING_ELSE: (~[]) >
+}
+
+// 文法の定義
+Node Expression():
+{}
+{
+    (
+    LOOKAHEAD(Message()) (Message())+ {
+        return jjtThis;
+    }
+    | <SCTPAD>
+    | <EOF>
+    )
+}
+
+Node Message():
+{}
+{
+    (<WCPAD>)* Symbol() (<SCPAD>)* (Arguments())* {
+        return jjtThis;
+    }
+}
+
+void Arguments() #void :
+{}
+{
+    <OPEN>
+    (Argument() (<COMMA> Argument())*)*
+    <CLOSE>
+}
+
+Node Argument() :
+{}
+{
+    (<WCPAD>)*
+    Expression() 
+    (<WCPAD>)* {
+        return jjtThis;
+    }
+}
+
+void Symbol() #void :
+{}
+{
+    Number()
+    | Identifier()
+    | Operator()
+    | Quote()
+}
+
+void Identifier() :
+{ Token token; }
+{
+    token = <IDENTIFIER> {
+        jjtThis.setNodeValue(token.image);
+    }
+}
+
+void Number() :
+{ Token token; }
+{
+    token = <NUMBER> {
+        jjtThis.setNodeValue(token.image);
+    }
+}
+
+void Operator() :
+{ Token token; }
+{
+    token = <OPERATOR> {
+        jjtThis.setNodeValue(token.image);
+    }
+}
+
+void Quote() :
+{ Token token; }
+{
+    token = <BACKQUOTES> {{
+            jjtThis.setToken(token);
+            String tokenImage = token.image;
+            jjtThis.setNodeValue(tokenImage.substring(1, tokenImage.length() - 1));
+            jjtThis.setNodeType(QuoteType.BackQuote);
+    }}
+    | token = <SINGLEQUOTES> {{
+            jjtThis.setToken(token);
+            String tokenImage = token.image;
+            jjtThis.setNodeValue(tokenImage.substring(1, tokenImage.length() - 1));
+            jjtThis.setNodeType(QuoteType.SingleQuote);
+    }}
+    | token = <DOUBLEQUOTES> {{
+            jjtThis.setToken(token);
+            String tokenImage = token.image;
+            jjtThis.setNodeValue(tokenImage.substring(1, tokenImage.length() - 1));
+            jjtThis.setNodeType(QuoteType.DoubleQuote);
+    }}
+    | token = <TRIQUOTES> {{
+            jjtThis.setToken(token);
+            String tokenImage = token.image;
+            jjtThis.setNodeValue(tokenImage.substring(3, tokenImage.length() - 3));
+            jjtThis.setNodeType(QuoteType.TriQuote);
+    }}
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ParserLexer" default="init" basedir=".">
+    <target name="init">
+        <property file="build.properties"/>
+    </target>
+    <target name="cc" depends="init">
+        <delete dir="${build.parser.dir}" includes="*.*" />
+        <jjtree target="${src.jjt.file}"
+            outputdirectory="${build.parser.dir}"
+            javacchome="${javacc.dir}"/>
+        <javacc target="${build.jj.file}" 
+            javacchome="${javacc.dir}"/>
+    </target>
+    <target name="compile" depends="init">
+        <javac destdir="${build.classes.dir}" srcdir="${src.dir}" debug="true">
+            <include name="**/*.java"/>
+        </javac>
+    </target>
+</project>
